@@ -1,30 +1,37 @@
 <?php
 
+use App\PhoneFilter;
+use App\DbIterator;
+
 require 'vendor/autoload.php';
 
-use App\PhoneFilter;
+$config=require 'config.php';
 
-$messages=[
-    [
-        'message_id'=>'1',
-        'message_text'=>"555-555-555 Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
-        'infected_flag'=>0
-    ],
-    [
-        'message_id'=>'2',
-        'message_text'=>"Lorem Ipsum is simply dummy text of the printing and 777-777-777 typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
-        'infected_flag'=>0
-    ],
-    [
-        'message_id'=>'3',
-        'message_text'=>"Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
-        'infected_flag'=>0
-    ],
-];
+try {
+    $pdo=new PDO(
+        $config['db']['connection'].';dbname='.$config['db']['name'].';charset=utf8',
+        $config['db']['user'],
+        $config['db']['password'],
+        $config['db']['options']
+    );
+} catch(PDOException $e) {
+    exit($e->getMessage());
+}
+        
+$sql='SELECT * FROM `messages` ORDER BY `message_id` ASC';
+$stmt=$pdo->prepare($sql,[PDO::ATTR_CURSOR=>PDO::CURSOR_SCROLL]);
+$stmt->execute();
 
-$filtered_messages=new PhoneFilter(new ArrayIterator($messages));
+$messages=new DbIterator($stmt);
 
-foreach($filtered_messages as $message){
-    $message['infected_flag']=1;
-    var_dump($message);
+$filtered_messages=new PhoneFilter($messages);
+
+foreach($filtered_messages as $message) {
+    $sql='UPDATE `messages` SET `infected_flag`=? WHERE `message_id`=?';
+    $stmt=$pdo->prepare($sql);
+    $stmt->execute(['1',$message->message_id]);
+    
+    $sql='INSERT INTO `infected_messages` (`message_id`) VALUES(?)';
+    $stmt=$pdo->prepare($sql);
+    $stmt->execute([$message->message_id]);
 }
