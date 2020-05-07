@@ -15,9 +15,10 @@ class SensitiveDataFilter extends FilterIterator
 
         $this->_patterns=is_null($patterns) ? [
                 // '/\+?([0-9]{3})-?([0-9]{3})-?([0-9]{3})/',
-                // '/[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\./0-9]*/',
                 // 10 Digit North American Number with +1
                 '/(?:\+?1[-. ]?)?\(?([2-9][0-8][0-9])\)?[-. ]?([2-9][0-9]{2})[-. ]?([0-9]{4})/',
+                
+                '/[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\.0-9]*/',
                 '/[Pp][Hh][Oo][Nn][Ee]\s*[Nn][Uu][Mm][Bb][Ee][Rr]/',
 
                 // email
