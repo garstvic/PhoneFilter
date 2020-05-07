@@ -1,6 +1,6 @@
 <?php
 
-use App\PhoneFilter;
+use App\SensitiveDataFilter;
 use App\DbIterator;
 
 require 'vendor/autoload.php';
@@ -24,7 +24,7 @@ $stmt->execute();
 
 $messages=new DbIterator($stmt);
 
-$filtered_messages=new PhoneFilter($messages);
+$filtered_messages=new SensitiveDataFilter($messages);
 
 foreach($filtered_messages as $message) {
     $sql='UPDATE `messages` SET `infected_flag`=? WHERE `message_id`=?';
